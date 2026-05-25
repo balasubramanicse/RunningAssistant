@@ -1,0 +1,18 @@
+# Ignore SQLite database containing local user credentials, synchronized activities, and training plans
+database.db
+
+# Ignore Python cache and compilation files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignore local temporary or scratch files
+scratch/
+temp/
+*.log

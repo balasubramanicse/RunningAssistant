@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroStride // Elite Marathon Training Dashboard & Coach</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <!-- Running runner icon in SVG -->
+            <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 10.2l-.3 1.9c-.3 1.5.7 2.9 2.2 3.2.3 0 .5.1.8.1 1.2 0 2.2-.8 2.5-2l.8-3.1 1.9 1.1c.4.2.8.3 1.3.3h1.8v-2h-1.8c-.3 0-.5-.1-.8-.2l-2.6-1.5c-.6-.4-1.4-.3-1.9.3L9.8 8.9zm7.3 5.4l-2.2-1.3-.8 3.1c-.2.9-1 1.6-1.9 1.6H9.1l-.3 1.5c-.1.6.3 1.1.9 1.2h4.5c1.4 0 2.7-.8 3.2-2.1l1.1-2.9-1.4-.6z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">AeroStride</span>
+          <span class="brand-tagline">AI Marathon Coach</span>
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li class="nav-item">
+          <div class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard')">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            Dashboard
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" id="nav-plan" onclick="switchTab('plan')">
+            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 14H7v-2h3v2zm0-4H7v-2h3v2zm0-4H7V8h3v2zm8 8h-6v-2h6v2zm0-4h-6v-2h6v2zm0-4h-6V8h6v2z"/></svg>
+            Training Plan
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" id="nav-coach" onclick="switchTab('coach')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            AeroAI Coach
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" id="nav-activities" onclick="switchTab('activities')">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            Training Log
+          </div>
+        </li>
+      </ul>
+
+      <!-- Service Connection Status Panel in Sidebar -->
+      <div class="connection-status-panel">
+        <h4 class="form-label" style="margin-bottom: 0.75rem; font-size: 0.75rem;">Integration Beacons</h4>
+        <div class="connection-card">
+          <div class="connection-row">
+            <span>Garmin Connect</span>
+            <span class="status-indicator">
+              <span class="indicator-dot" id="sidebar-garmin-dot"></span>
+              <span id="sidebar-garmin-status">Disconnected</span>
+            </span>
+          </div>
+          <div class="connection-row">
+            <span>Strava Sync</span>
+            <span class="status-indicator">
+              <span class="indicator-dot" id="sidebar-strava-dot"></span>
+              <span id="sidebar-strava-status">Disconnected</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Area -->
+    <main>
+      
+      <!-- Top Header -->
+      <section class="dashboard-header">
+        <div class="header-meta">
+          <h1 id="user-greeting">Welcome Runner</h1>
+          <p id="dashboard-subtitle">Start preparing for your peak marathon performance today.</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="openPlanModal()">
+            <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            Marathon Plan Generator
+          </button>
+          <button class="btn btn-primary" id="header-coach-btn" onclick="switchTab('coach')">
+            <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ✦ AeroAI Performance Coach
+          </button>
+        </div>
+      </section>
+
+      <!-- Section: DASHBOARD VIEW -->
+      <section id="view-dashboard-container">
+        
+        <!-- Metrics Ribbon -->
+        <div class="metrics-strip">
+          <div class="mini-metric-card">
+            <span class="metric-label">Weekly Volume</span>
+            <div class="metric-value" id="metric-weekly-vol">0.0 <span class="metric-unit">mi</span></div>
+            <span class="metric-subtext trend-flat" id="metric-vol-trend">No plan generated</span>
+          </div>
+          <div class="mini-metric-card">
+            <span class="metric-label">Avg Pace</span>
+            <div class="metric-value" id="metric-avg-pace">0:00 <span class="metric-unit">/mi</span></div>
+            <span class="metric-subtext trend-flat" id="metric-pace-target">Target: --:-- /mi</span>
+          </div>
+          <div class="mini-metric-card">
+            <span class="metric-label">Plan Consistency</span>
+            <div class="metric-value" id="metric-consistency">0 <span class="metric-unit">%</span></div>
+            <span class="metric-subtext trend-up" id="metric-runs-completed">0 of 0 runs</span>
+          </div>
+          <div class="mini-metric-card">
+            <span class="metric-label">Countdown</span>
+            <div class="metric-value" id="metric-countdown">-- <span class="metric-unit">days</span></div>
+            <span class="metric-subtext trend-flat" id="metric-target-date">No date set</span>
+          </div>
+        </div>
+
+        <!-- Main Dashboard Layout Grid -->
+        <div class="dashboard-grid">
+          
+          <!-- Column 8: Volume Progress SVG Chart -->
+          <div class="card col-8">
+            <div class="card-title">
+              Weekly Running Volume
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+            </div>
+            <div class="chart-box">
+              <svg class="chart-svg" id="volume-chart-svg">
+                <!-- SVG gradients -->
+                <defs>
+                  <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--primary)" />
+                    <stop offset="100%" stop-color="var(--secondary)" />
+                  </linearGradient>
+                  <linearGradient id="area-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.4" />
+                    <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <!-- Chart content gets dynamically injected here -->
+              </svg>
+              <!-- Tooltip element -->
+              <div class="chart-tooltip" id="chart-tooltip-el"></div>
+            </div>
+            <div class="chart-legends">
+              <div class="chart-legend-item">
+                <span class="legend-color actual"></span> Actual Mileage
+              </div>
+              <div class="chart-legend-item">
+                <span class="legend-color target"></span> Periodized Target Plan
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 4: Marathon Progress Ring -->
+          <div class="card col-4">
+            <div class="card-title">
+              Marathon Countdown
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="countdown-gauge-container">
+              <div class="svg-ring-container">
+                <svg viewBox="0 0 160 160">
+                  <defs>
+                    <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--primary)" />
+                      <stop offset="100%" stop-color="var(--secondary)" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="svg-ring-background" cx="80" cy="80" r="70" />
+                  <circle class="svg-ring-progress" id="countdown-progress-ring" cx="80" cy="80" r="70" />
+                </svg>
+                <div class="gauge-center-content">
+                  <div class="gauge-center-days" id="gauge-days-val">--</div>
+                  <div class="gauge-center-label" id="gauge-days-label">Days Left</div>
+                </div>
+              </div>
+              
+              <div class="countdown-meta-grid">
+                <div class="countdown-meta-item">
+                  <div class="countdown-meta-num" id="gauge-weeks-num">-- / 16</div>
+                  <div class="countdown-meta-label">Weeks Done</div>
+                </div>
+                <div class="countdown-meta-item">
+                  <div class="countdown-meta-num" id="gauge-miles-num">0.0</div>
+                  <div class="countdown-meta-label">Total Miles</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 6: Integration Hub & Sync Center -->
+          <div class="card col-6">
+            <div class="card-title">
+              Sync Center
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+              Connect your favorite running platform to automatically sync run statistics, split metrics, and heart rate zones.
+            </p>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              
+              <!-- Garmin Connect Button -->
+              <div class="checklist-item" id="btn-garmin-connect" onclick="connectService('garmin')" style="justify-content: space-between; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 32px; height: 32px; background: rgba(6, 182, 212, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--secondary)">
+                    <svg style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 9v3l2 1M12 2v3M12 19v3"/></svg>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 0.85rem; color: #fff; font-weight: 600;">Garmin Connect</h4>
+                    <span id="garmin-status-label" style="font-size: 0.7rem; color: var(--text-muted)">Disconnected</span>
+                    <span onclick="event.stopPropagation(); openGarminConfigModal();" style="text-decoration: underline; font-size: 0.65rem; color: var(--secondary); cursor: pointer; margin-top: 0.15rem; display: block;">Edit Credentials</span>
+                  </div>
+                </div>
+                <div class="indicator-dot" id="garmin-beacon-dot"></div>
+              </div>
+
+
+              <!-- Strava Connect Button -->
+              <div class="checklist-item" id="btn-strava-connect" onclick="connectService('strava')" style="justify-content: space-between; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 32px; height: 32px; background: rgba(252, 76, 2, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fc4c02">
+                    <!-- Strava generic run triangle icon -->
+                    <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.899L8.38 4.116H5.315L10.464 14.28l5.15-10.164H12.55"/></svg>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 0.85rem; color: #fff; font-weight: 600;">Strava Sync</h4>
+                    <span id="strava-status-label" style="font-size: 0.7rem; color: var(--text-muted)">Disconnected</span>
+                    <span onclick="event.stopPropagation(); openStravaConfigModal();" style="text-decoration: underline; font-size: 0.65rem; color: var(--primary); cursor: pointer; margin-top: 0.15rem; display: block;">Edit API Keys</span>
+                  </div>
+                </div>
+                <div class="indicator-dot" id="strava-beacon-dot"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Column 6: 2026 Year-to-Date Training & Cross-Training -->
+          <div class="card col-6">
+            <div class="card-title">
+              2026 YTD Training Summary
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1rem;" id="ytd-stats-container">
+              <div style="text-align: center; padding: 1.5rem 0;">
+                <span style="font-size: 2.25rem; font-weight: 800; font-family: var(--font-heading); color: #fff;" id="ytd-total-count">0</span>
+                <span style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;">Workouts Logged in 2026</span>
+              </div>
+              
+              <div style="display: flex; flex-direction: column; gap: 0.85rem; border-top: 1px solid var(--card-border); padding-top: 1rem;">
+                <!-- Running -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <span style="color: #fff; font-weight: 600;">🏃 Running</span>
+                    <span id="ytd-run-meta" style="color: var(--text-muted);">0 runs &bull; 0.0 mi</span>
+                  </div>
+                  <div class="zone-progress-bg" style="height: 6px;"><div class="zone-progress-fill zone-2-bg" id="ytd-run-bar" style="width: 0%; height: 6px;"></div></div>
+                </div>
+                <!-- Cycling -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <span style="color: #fff; font-weight: 600;">🚴 Cycling</span>
+                    <span id="ytd-ride-meta" style="color: var(--text-muted);">0 rides &bull; 0.0 mi</span>
+                  </div>
+                  <div class="zone-progress-bg" style="height: 6px;"><div class="zone-progress-fill zone-3-bg" id="ytd-ride-bar" style="width: 0%; height: 6px;"></div></div>
+                </div>
+                <!-- Swimming -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <span style="color: #fff; font-weight: 600;">🏊 Swimming</span>
+                    <span id="ytd-swim-meta" style="color: var(--text-muted);">0 swims &bull; 0.0 mi</span>
+                  </div>
+                  <div class="zone-progress-bg" style="height: 6px;"><div class="zone-progress-fill zone-1-bg" id="ytd-swim-bar" style="width: 0%; height: 6px;"></div></div>
+                </div>
+                <!-- Strength -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <span style="color: #fff; font-weight: 600;">🧘 Strength</span>
+                    <span id="ytd-strength-meta" style="color: var(--text-muted);">0 sessions &bull; 0 mins</span>
+                  </div>
+                  <div class="zone-progress-bg" style="height: 6px;"><div class="zone-progress-fill zone-4-bg" id="ytd-strength-bar" style="width: 0%; height: 6px;"></div></div>
+                </div>
+                <!-- Walking -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                    <span style="color: #fff; font-weight: 600;">🚶 Walking</span>
+                    <span id="ytd-walk-meta" style="color: var(--text-muted);">0 walks &bull; 0.0 mi</span>
+                  </div>
+                  <div class="zone-progress-bg" style="height: 6px;"><div class="zone-progress-fill" id="ytd-walk-bar" style="width: 0%; height: 6px; background: #6b7280;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 12: Comprehensive Multi-Sport Training Log -->
+          <div class="card col-12">
+            <div class="card-title">
+              Comprehensive Multi-Sport Training Log
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+              Click on any activity card below to expand Coach Aero's AI Performance Assessment, went-well reviews, and athletic improvement suggestions.
+            </p>
+            <div class="activity-feed" id="activity-list-container" style="max-height: 480px;">
+              <!-- Dynamic activities injected here -->
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Section: TRAINING PLAN CALENDAR VIEW -->
+      <section id="view-plan-container" style="display: none;">
+        
+        <div class="plan-header-strip">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700;">16-Week Marathon Block</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted)" id="plan-phase-subtitle">No active training plan generated. Generate one above!</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <button class="btn btn-secondary" id="btn-recalibrate-plan" onclick="openRecalibrateModal()" style="display: none; padding: 0.5rem 0.85rem; font-size: 0.75rem;">
+              ✦ Recalibrate Training Plan
+            </button>
+            <div id="plan-generation-badge" class="workout-target-badge" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--accent); display: none; margin: 0;">
+              Generating Success
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Selector Tabs -->
+        <div class="plan-weeks-scroller" id="weeks-tab-row">
+          <!-- Dynamically populated tab items Week 1 - 16 -->
+        </div>
+
+        <!-- Weekly Schedule Days Grid -->
+        <div class="weekly-schedule-grid" id="weekly-days-grid">
+          <!-- Dynamically populated 7 day cards -->
+        </div>
+
+      </section>
+
+      <!-- Section: ACTIVITY LOG VIEW -->
+      <section id="view-activities-container" style="display: none;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Synced Run Workouts</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Double click on any synced run card below to open deep cardiac decoupling and pace zone analytics.</p>
+        
+        <div class="activity-feed" id="activity-list-container-archive">
+          <!-- Dynamic activities injected here -->
+        </div>
+      </section>
+
+      <!-- Section: AEROAI COACH VIEW -->
+      <section id="view-coach-container" style="display: none;">
+        <div class="plan-header-strip" style="margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700;">AeroAI Performance Coach</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Your personalized dynamic coach review, bio-indicators, and 30-day chronic training strain analysis.</p>
+          </div>
+        </div>
+        
+        <div class="dashboard-grid">
+          <!-- Column 12: AeroAI Coach Corner (Dual Pane) -->
+          <div class="card col-12" style="padding: 1.5rem;">
+            <div class="card-title" style="margin-bottom: 1.25rem;">
+              AeroAI Coach Corner
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            
+            <div class="coach-dual-container">
+              <!-- Left Pane: Daily Coach -->
+              <div class="coach-pane-left">
+                <div class="coach-header">
+                  <div class="coach-avatar coach-avatar-pulse">✦</div>
+                  <div class="coach-status-desc">
+                    <h3>Coach Aero</h3>
+                    <p id="coach-last-updated">Ready to analyze your training metrics</p>
+                  </div>
+                </div>
+                <div class="coach-digest-bubble" id="coach-digest-text">
+                  Generating your daily training digest. Set up a running plan to receive target training zones, injury warnings, and periodized training tips!
+                </div>
+                
+                <div class="coach-workout-target">
+                  <div class="workout-target-info">
+                    <p style="text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; color: var(--secondary)">Today's Target Workout</p>
+                    <h4 id="coach-today-workout-title" style="margin-top: 0.15rem">Rest / Light Recovery</h4>
+                    <p id="coach-today-workout-desc">Keep active recovery light today or take a full rest.</p>
+                  </div>
+                  <div class="workout-target-badge" id="coach-today-workout-badge">Rest Day</div>
+                </div>
+                
+                <div class="metrics-checklist" style="margin-top: 1rem;">
+                  <h4>Daily Bio-Indicators</h4>
+                  <div style="display: flex; gap: 0.75rem;">
+                    <div class="checklist-item" onclick="toggleBioCheck(this, 'sleep')" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.75rem; margin: 0;">
+                      <div class="checklist-checkbox">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                      </div>
+                      <span>Sleep Quality (&gt;7.5h)</span>
+                    </div>
+                    <div class="checklist-item" onclick="toggleBioCheck(this, 'soreness')" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.75rem; margin: 0;">
+                      <div class="checklist-checkbox">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                      </div>
+                      <span>No Joint Soreness</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="openDailyReviewModal()" style="width: 100%; margin-top: 1rem;">
+                  ✦ Daily Coach Review
+                </button>
+              </div>
+              
+              <!-- Right Pane: Athlete Intelligence 30-Day Trends -->
+              <div class="coach-pane-right">
+                <h4 class="trends-pane-title">30-Day Athlete Intelligence</h4>
+                
+                <div class="trends-metric-row">
+                  <div class="trends-metric-card">
+                    <span class="trends-metric-val" id="trends-strain-val">0</span>
+                    <span class="trends-metric-lbl">Aero-Exertion Strain</span>
+                  </div>
+                  <div class="trends-metric-card">
+                    <span class="trends-metric-val" id="trends-strain-status">Optimal</span>
+                    <span class="trends-metric-lbl">Training Status</span>
+                  </div>
+                </div>
+                
+                <div class="trends-zone-distribution">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 0.25rem;">
+                    <span style="color: var(--text-muted);">30-Day HR Intensity Zones</span>
+                    <span id="trends-zones-meta" style="color: #fff; font-weight: 600;">80% Aerobic</span>
+                  </div>
+                  <div class="zone-distribution-bar-container">
+                    <div class="zone-dist-bar zone-1" id="trends-bar-z1" style="width: 0%;" title="Zone 1 Recovery"></div>
+                    <div class="zone-dist-bar zone-2" id="trends-bar-z2" style="width: 0%;" title="Zone 2 Aerobic"></div>
+                    <div class="zone-dist-bar zone-3" id="trends-bar-z3" style="width: 0%;" title="Zone 3 Tempo"></div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    <span>Recovery (&lt;135)</span>
+                    <span>Aerobic (135-150)</span>
+                    <span>Tempo (&gt;150)</span>
+                  </div>
+                </div>
+                
+                <div class="trends-insights-box">
+                  <h5>Coach Aero's 30-Day Insights</h5>
+                  <ul class="trends-insights-list" id="trends-insights-container">
+                    <li>✦ No activities found in the last 30 days. Connect Garmin or Strava to analyze trends.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container-el"></div>
+
+  <!-- MODAL: PLAN GENERATOR FORM -->
+  <div class="modal-overlay" id="modal-plan-generator">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Marathon Plan Generator</h3>
+        <button class="modal-close-btn" onclick="closePlanModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="plan-generator-form" onsubmit="generateMarathonPlan(event)">
+          <div class="form-group">
+            <label class="form-label" for="form-marathon-date">Marathon Target Date</label>
+            <input type="date" class="form-control" id="form-marathon-date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="form-target-time">Target Finishing Time</label>
+            <select class="form-control" id="form-target-time" required>
+              <option value="3:00:00">Sub 3:00 (Elite/High Intensity)</option>
+              <option value="3:30:00" selected>Sub 3:30 (Sub 8:00/mi Pace)</option>
+              <option value="4:00:00">Sub 4:00 (Sub 9:09/mi Pace)</option>
+              <option value="4:30:00">Sub 4:30 (Sub 10:18/mi Pace)</option>
+              <option value="5:00:00">Sub 5:00 (Sub 11:27/mi Pace)</option>
+            </select>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="form-weekly-miles">Current Vol (miles/wk)</label>
+              <input type="number" class="form-control" id="form-weekly-miles" value="25" min="10" max="80" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-experience">Experience Level</label>
+              <select class="form-control" id="form-experience" required>
+                <option value="novice">Novice (First Marathon)</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advanced">Advanced (Multiple Races)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+            Assemble 16-Week Training Blocks
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- MODAL: POST-RUN AUTOMATED REVIEW PANEL -->
+  <div class="modal-overlay" id="modal-post-run-review">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="review-modal-title">Post-Run Automated Review</h3>
+        <button class="modal-close-btn" onclick="closeReviewModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="post-run-metrics-row">
+          <div class="post-run-pill">
+            <div class="post-run-pill-val" id="rev-val-dist">0.0 mi</div>
+            <div class="post-run-pill-lbl">Distance</div>
+          </div>
+          <div class="post-run-pill">
+            <div class="post-run-pill-val" id="rev-val-pace">0:00</div>
+            <div class="post-run-pill-lbl">Avg Pace</div>
+          </div>
+          <div class="post-run-pill">
+            <div class="post-run-pill-val" id="rev-val-hr">000 bpm</div>
+            <div class="post-run-pill-lbl">Avg HR</div>
+          </div>
+        </div>
+
+        <div class="post-run-zones-box">
+          <div class="post-run-zone-title">Cardiac & Pace Distribution</div>
+          <div class="zone-bar-row">
+            <div class="zone-lbl">Zone 1 Recov</div>
+            <div class="zone-progress-bg"><div class="zone-progress-fill zone-1-bg" id="rev-z1-bar" style="width: 25%"></div></div>
+            <div class="zone-pct" id="rev-z1-pct">25%</div>
+          </div>
+          <div class="zone-bar-row">
+            <div class="zone-lbl">Zone 2 Base</div>
+            <div class="zone-progress-bg"><div class="zone-progress-fill zone-2-bg" id="rev-z2-bar" style="width: 55%"></div></div>
+            <div class="zone-pct" id="rev-z2-pct">55%</div>
+          </div>
+          <div class="zone-bar-row">
+            <div class="zone-lbl">Zone 3 Tempo</div>
+            <div class="zone-progress-bg"><div class="zone-progress-fill zone-3-bg" id="rev-z3-bar" style="width: 15%"></div></div>
+            <div class="zone-pct" id="rev-z3-pct">15%</div>
+          </div>
+          <div class="zone-bar-row">
+            <div class="zone-lbl">Zone 4 Thresh</div>
+            <div class="zone-progress-bg"><div class="zone-progress-fill zone-4-bg" id="rev-z4-bar" style="width: 5%"></div></div>
+            <div class="zone-pct" id="rev-z4-pct">5%</div>
+          </div>
+        </div>
+
+        <!-- Custom decouping stats -->
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--card-border);">
+          <div>Aerobic Decoupling: <span style="font-weight: 700; color: var(--accent)" id="rev-decoupling-val">2.8%</span></div>
+          <div>Training Effect: <span style="font-weight: 700; color: var(--secondary)" id="rev-te-val">3.4 Aerobic</span></div>
+        </div>
+
+        <div class="coach-speech-card">
+          <div class="speech-title">
+            <span style="font-size:1.2rem">✦</span> Coach Aero's Performance Insight
+          </div>
+          <div class="speech-text" id="rev-coach-insight">
+            Analyzing biometric data...
+          </div>
+        </div>
+        
+        <button class="btn btn-secondary" onclick="closeReviewModal()" style="width: 100%">
+          Close Analysis Report
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DAILY COACH REVIEW & TRAINING PROGRESS -->
+  <div class="modal-overlay" id="modal-daily-review">
+    <div class="modal-container" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3 id="daily-review-modal-title">Daily Training Digest &amp; Review</h3>
+        <button class="modal-close-btn" onclick="closeDailyReviewModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding-top: 0.5rem;">
+        
+        <!-- Summary Cards Row -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="daily-readiness-val">90%</div>
+            <div class="post-run-pill-lbl">Recovery Readiness</div>
+          </div>
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="daily-plan-match">0.0 / 0.0 mi</div>
+            <div class="post-run-pill-lbl">Plan Alignment</div>
+          </div>
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="daily-completed-lbl">Rest Day</div>
+            <div class="post-run-pill-lbl">Workout Status</div>
+          </div>
+        </div>
+
+        <!-- Biometrics & Training Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 1.25rem;">
+          <h4 style="margin-top: 0; margin-bottom: 0.5rem; color: #fff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Current Phase &amp; Metrics</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Training Block:</span>
+              <span id="daily-phase-lbl" style="color: var(--secondary); font-weight: 600;">Base Building Phase</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Weekly Volume Progress:</span>
+              <span id="daily-week-vol-lbl" style="color: #fff; font-weight: 600;">12.5 / 30.0 miles</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Sleep &amp; Soreness Quality:</span>
+              <span id="daily-biometrics-lbl" style="color: var(--accent); font-weight: 600;">Optimal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Completed Activities -->
+        <div id="daily-activities-box" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border); margin-bottom: 1.25rem; display: none;">
+          <h4 style="margin-top: 0; margin-bottom: 0.5rem; color: #fff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Today's Activities Completed</h4>
+          <div id="daily-activities-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Rendered activities -->
+          </div>
+        </div>
+
+        <!-- Coach Aero's Speech Card -->
+        <div class="coach-speech-card" style="margin-bottom: 1.5rem;">
+          <div class="speech-title">
+            <span style="font-size:1.2rem">✦</span> Coach Aero's Strategic Advice
+          </div>
+          <div class="speech-text" id="daily-coach-insight" style="line-height: 1.5; font-size: 0.85rem;">
+            Loading coaching summary...
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="closeDailyReviewModal()" style="width: 100%">
+          Done Viewing Training Digest
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AI TRAINING PLAN RECALIBRATOR -->
+  <div class="modal-overlay" id="modal-recalibrate-plan">
+    <div class="modal-container" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>✦ AeroAI Plan Recalibrator</h3>
+        <button class="modal-close-btn" onclick="closeRecalibrateModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding-top: 0.5rem;">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Coach Aero has analyzed your training compliance, target paces, and active bio-indicators to offer three specialized dynamic recalibration strategies:
+        </p>
+
+        <!-- Current Health Metrics Grid -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="recal-compliance-val">--%</div>
+            <div class="post-run-pill-lbl">Plan Compliance</div>
+          </div>
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="recal-fatigue-val">Optimal</div>
+            <div class="post-run-pill-lbl">Fatigue Status</div>
+          </div>
+          <div class="post-run-pill" style="flex: 1;">
+            <div class="post-run-pill-val" id="recal-pace-deviation">On Target</div>
+            <div class="post-run-pill-lbl">Pace Alignment</div>
+          </div>
+        </div>
+
+        <form id="recalibrate-plan-form" onsubmit="applyPlanRecalibration(event)">
+          <div class="form-group">
+            <label class="form-label">Select Recalibration Strategy</label>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+              
+              <!-- Option A: Bio-Adaptive Taper -->
+              <label class="strategy-option-card">
+                <input type="radio" name="recal-strategy" value="taper" checked>
+                <div class="strategy-option-content">
+                  <div class="strategy-option-header">
+                    <span class="strategy-badge badge-taper">Bio-Adaptive Taper</span>
+                    <span style="font-size: 0.7rem; color: var(--accent);">Recommended if Sore</span>
+                  </div>
+                  <p class="strategy-option-desc">
+                    Decreases planned mileage for the next 2-3 weeks by 15% and converts high-intensity intervals into Zone 2 recovery runs to prevent stress injury.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Option B: Volume Acceleration -->
+              <label class="strategy-option-card">
+                <input type="radio" name="recal-strategy" value="accelerate">
+                <div class="strategy-option-content">
+                  <div class="strategy-option-header">
+                    <span class="strategy-badge badge-accelerate">Peak Volume Acceleration</span>
+                    <span style="font-size: 0.7rem; color: var(--secondary);">High Compliance</span>
+                  </div>
+                  <p class="strategy-option-desc">
+                    Feeling strong? Steps up remaining peak mileage blocks safely by 8-10% to push cardiac output and stamina boundaries.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Option C: Re-Periodize Missed Milestones -->
+              <label class="strategy-option-card">
+                <input type="radio" name="recal-strategy" value="reperiodize">
+                <div class="strategy-option-content">
+                  <div class="strategy-option-header">
+                    <span class="strategy-badge badge-shift">Conservative Re-Periodize</span>
+                  </div>
+                  <p class="strategy-option-desc">
+                    Redistributes missed workouts across the remaining weeks in gentle steps, ensuring you still hit critical peak volume milestones safely.
+                  </p>
+                </div>
+              </label>
+
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="closeRecalibrateModal()" style="flex: 1;">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="flex: 2;">Apply AI Recalibration</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GARMIN MFA/OTP INPUT MODAL ===== -->
+  <div class="modal-overlay" id="modal-garmin-otp">
+    <div class="modal-container" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Garmin MFA Verification</h3>
+        <button class="modal-close-btn" onclick="closeGarminOtpModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Garmin has requested a Multi-Factor Verification code. Enter the secure 6-digit OTP code sent to your device or email to complete sync.
+        </p>
+        <form id="garmin-otp-form" onsubmit="submitGarminOtp(event)">
+          <div class="form-group">
+            <label class="form-label" for="garmin-otp-input">Verification Code</label>
+            <input type="text" class="form-control" id="garmin-otp-input" placeholder="e.g. 123456" pattern="\d{6}" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.4em; font-weight: 700; color: #fff;" required>
+          </div>
+          <button type="submit" class="btn btn-primary" id="garmin-otp-btn" style="width: 100%; margin-top: 1rem;">
+            Verify &amp; Continue Sync
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION SCREEN TRANSITION OVERLAY -->
+  <div class="modal-overlay" id="modal-service-sync">
+    <div class="modal-container" style="max-width: 400px;">
+      <div class="modal-body" style="padding: 2.5rem 2rem;">
+        <div class="sync-loader-wrapper">
+          <div class="sync-spinner"></div>
+          <h3 id="sync-loader-title" style="margin-bottom: 0.5rem; font-family: var(--font-heading); color: #fff;">Connecting Garmin Connect</h3>
+          <p id="sync-loader-subtitle" style="font-size: 0.8rem; color: var(--text-muted);">Requesting OAuth tokens and sync permissions...</p>
+          <div class="sync-progress-bar">
+            <div class="sync-progress-fill" id="sync-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STRAVA CLIENT ID/SECRET SETUP -->
+  <div class="modal-overlay" id="modal-strava-config">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>Connect Strava API Developer Keys</h3>
+        <button class="modal-close-btn" onclick="closeStravaConfigModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 1.25rem;">
+          To integrate live runs, register a free application at <a href="https://developers.strava.com" target="_blank" style="text-decoration: underline; color: var(--secondary)">developers.strava.com</a> and paste your credentials below. These are stored locally in your private SQLite database.
+        </p>
+        <form id="strava-config-form" onsubmit="saveStravaCredentials(event)">
+          <div class="form-group">
+            <label class="form-label" for="strava-client-id">Strava Client ID</label>
+            <input type="text" class="form-control" id="strava-client-id" placeholder="e.g. 109348" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="strava-client-secret">Strava Client Secret</label>
+            <input type="password" class="form-control" id="strava-client-secret" placeholder="Your Client Secret Key" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.25rem;">
+            Save Developer Credentials
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GARMIN CONNECT CREDENTIALS MODAL ===== -->
+  <div class="modal-overlay" id="modal-garmin-config">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>Connect Garmin Account</h3>
+        <button class="modal-close-btn" onclick="closeGarminConfigModal()">
+          <svg style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+          Enter your <strong style="color:#fff">Garmin Connect</strong> login credentials. They're stored <em>only</em> in your local SQLite database and never sent to any third party — syncing happens directly from this machine to Garmin's servers.
+        </p>
+        <div id="garmin-config-notice" style="display:none; background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.3); border-radius: 10px; padding: 0.75rem; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+          <strong style="color: var(--secondary);">ℹ️ First-time MFA prompt:</strong> If Garmin asks for a verification code in your email or app, approve it once in your browser at <a href="https://connect.garmin.com" target="_blank" style="color:var(--secondary);">connect.garmin.com</a>, then retry sync here.
+        </div>
+        <form id="garmin-config-form" onsubmit="saveGarminCredentials(event)">
+          <div class="form-group">
+            <label class="form-label" for="garmin-email">Garmin Connect Email</label>
+            <input type="email" class="form-control" id="garmin-email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="garmin-password">Garmin Connect Password</label>
+            <input type="password" class="form-control" id="garmin-password" placeholder="Your Garmin password" required>
+          </div>
+          <div id="garmin-save-status" style="display:none; text-align:center; font-size:0.8rem; color: var(--secondary); padding: 0.5rem 0;"></div>
+          <button type="submit" class="btn btn-primary" id="garmin-save-btn" style="width: 100%; margin-top: 1.25rem;">
+            Save &amp; Sync All 2026 Activities
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
