@@ -16,3 +16,6 @@ __pycache__/
 scratch/
 temp/
 *.log
+
+# Git local credential helper config
+
